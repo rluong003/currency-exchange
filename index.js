@@ -1,5 +1,6 @@
 const axios = require("axios").default;
 const inquirer = require("inquirer");
+const chalk = require("chalk");
 
 //make the api request with exchange rates in USD
 const getExchangeRates = async () => {
@@ -12,17 +13,30 @@ const getExchangeRates = async () => {
   }
 };
 
-//main function
+/**
+ * Converts a native currency into a foreign currency
+ *
+ * Step 1: Make API request and get the exchange rates in USD
+ * Step 2: Prompt for user input with inquirer to get Native currency, total amount, and foreign currency
+ * Step 2.5: Validate each user input
+ * Step 3: Make the necessary conversion. 4 cases
+ *        Case 1: if the native currency and the foreign currency are the same, no calculation is needed
+ *        Case 2: Convert a native currency into USD. We find the exchange rate from USD to native and do (amount / native exchange rate)
+ *        Case 3: Native currency is USD. Since our exchange rates already in USD, we simply multiply amount by the foreign currency exchange rate
+ *        Case 4: Native currency is not USD and Foreign is not USD. We convert native to USD, then convert the USD amount to the foreign amount
+ * Step 4: Loop back into user prompt, so that we only have to make 1 API request until the user exits the program with CTRL+C
+ */
+
 const currency_exchange = async () => {
-  // rates = dictionary of exchange rates from USD
-  // base = USD
   const { rates, base } = await getExchangeRates();
   console.log("Todays current exchange rates in USD");
   console.log(rates);
   console.log(
-    "Welcome to the foreign currency exchange app. Exit any time with CTRL+C"
+    chalk.magenta(
+      "Welcome to the foreign currency exchange app. Exit any time with CTRL+C \n"
+    )
   );
-  //if input acronym is not in rates dictionary, keep asking for user input
+
   const validateAcronym = async (acronym) => {
     if (!(acronym.toUpperCase() in rates)) {
       return "Please input a valid currency acronym";
@@ -43,9 +57,12 @@ const currency_exchange = async () => {
         type: "input",
         name: "amount",
         message: "Please enter the amount of your native currency: ",
-        // amount is string, cast it into a float to see if its greater than or equal to 0 or not NaN
-        // or else continue to ask for user input
+
         validate: async (amount) => {
+          let regEX = amount.match(/[+-]?((?=\.?\d)\d*\.?\d*)/);
+          if (!regEX) {
+            return "Please enter a valid number";
+          }
           let valid = !isNaN(parseFloat(amount)) && parseFloat(amount) >= 0;
           return valid || "Please enter a valid number";
         },
@@ -58,39 +75,53 @@ const currency_exchange = async () => {
         validate: validateAcronym,
       },
     ];
-    //returns native,amount,foreign in a dictionary
+
     const response = await inquirer.prompt(questions);
 
-    //deconstruct the user input and cast the amount into a float
-    const { native, foreign } = response;
+    let { native, foreign } = response;
     const amount = parseFloat(response.amount);
 
-    // the exchange rates from the API are already in USD -> foreign currency so no  need to do any other conversions
-    if (native === "USD") {
+    native = native.toUpperCase();
+    foreign = foreign.toUpperCase();
+    if (native === foreign) {
+      console.log(
+        "You converted " +
+          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          " into " +
+          chalk.yellow(`${amount} ${foreign.toUpperCase()}\n`)
+      );
+    } 
+    else if (native === "USD") {
       const conversionRate = rates[foreign];
-      const convertedAmount = (amount * conversionRate).toFixed(2);
+      const convertedAmount = (amount * conversionRate);
       console.log(
-        `You converted ${amount} ${native.toUpperCase()} into ${convertedAmount} ${foreign.toUpperCase()}\n`
+        "You converted " +
+          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          " into " +
+          chalk.yellow(`${convertedAmount} ${foreign.toUpperCase()}\n`)
       );
-    }
-    // no calculations needed if the user wants to convert to same currency they currently have
-    else if (native === foreign) {
+    } 
+    else if (foreign === "USD") {
+      const convertedAmount = (amount / rates[native]);
       console.log(
-        `You converted ${amount} ${native.toUpperCase()} into ${convertedAmount} ${foreign.toUpperCase()}\n`
+        "You converted " +
+          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          " into " +
+          chalk.yellow(`${convertedAmount} ${foreign.toUpperCase()}\n`)
       );
-    } else {
-      //convert the native currency to USD, then convert USD to targeted foreign currency
-      // only used when native is not USD
+    } 
+    else {
       const nativeToUSD = amount / rates[native];
       const conversionRate = rates[foreign];
-      const convertedAmount = (nativeToUSD * conversionRate).toFixed(2);
+      const convertedAmount = (nativeToUSD * conversionRate);
       console.log(
-        `You converted ${amount} ${native.toUpperCase()} into ${convertedAmount} ${foreign.toUpperCase()}\n`
+        "You converted " +
+          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          " into " +
+          chalk.yellow(`${convertedAmount} ${foreign.toUpperCase()}\n`)
       );
     }
 
-    //loop back into user input prompt until the user exits the program
-    // so that we don't have to make multiple API requests.
     prompts();
   };
 
