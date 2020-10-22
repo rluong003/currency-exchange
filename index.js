@@ -86,9 +86,9 @@ const currency_exchange = async () => {
     if (native === foreign) {
       console.log(
         "You converted " +
-          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          chalk.green(`${amount} ${native}`) +
           " into " +
-          chalk.yellow(`${amount} ${foreign.toUpperCase()}\n`)
+          chalk.yellow(`${amount} ${foreign}\n`)
       );
     } 
     else if (native === "USD") {
@@ -96,18 +96,18 @@ const currency_exchange = async () => {
       const convertedAmount = (amount * conversionRate);
       console.log(
         "You converted " +
-          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          chalk.green(`${amount} ${native}`) +
           " into " +
-          chalk.yellow(`${convertedAmount} ${foreign.toUpperCase()}\n`)
+          chalk.yellow(`${convertedAmount} ${foreign}\n`)
       );
     } 
     else if (foreign === "USD") {
       const convertedAmount = (amount / rates[native]);
       console.log(
         "You converted " +
-          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          chalk.green(`${amount} ${native}`) +
           " into " +
-          chalk.yellow(`${convertedAmount} ${foreign.toUpperCase()}\n`)
+          chalk.yellow(`${convertedAmount} ${foreign}\n`)
       );
     } 
     else {
@@ -116,9 +116,9 @@ const currency_exchange = async () => {
       const convertedAmount = (nativeToUSD * conversionRate);
       console.log(
         "You converted " +
-          chalk.green(`${amount} ${native.toUpperCase()}`) +
+          chalk.green(`${amount} ${native}`) +
           " into " +
-          chalk.yellow(`${convertedAmount} ${foreign.toUpperCase()}\n`)
+          chalk.yellow(`${convertedAmount} ${foreign}\n`)
       );
     }
 
