@@ -11,7 +11,14 @@
   "dependencies": {
     "axios": "^0.20.0",
     "chalk": "^4.1.0",
-    "inquirer": "^7.3.3",
-    "prompts": "^2.3.2"
-  }
+    "inquirer": "^7.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rluong003/currency-exchange.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rluong003/currency-exchange/issues"
+  },
+  "homepage": "https://github.com/rluong003/currency-exchange#readme"
 }
